@@ -1,0 +1,321 @@
+---
+title: "Root finding methods"
+author: "Thomas Achia"
+date: "3/20/2023"
+output: html_document
+---
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = TRUE)
+```
+
+## Analytical and numerical approaches to problems
+
+See https://math.stackexchange.com/questions/935405/what-s-the-difference-between-analytical-and-numerical-approaches-to-problems#:~:text=Numerical%20methods%20use%20exact%20algorithms,the%20use%20of%20numerical%20methods.
+
+
+**Analytical approach example:**
+
+Find the root of $f(x)=x-5.$
+
+**Analytical solution**: $f(x)=x-5=0,$ add $+5$ to both sides to get the answer $x=5$
+
+**Numerical solution:**
+
+let's guess $x=1:~f(1)=1-5=-4.$ A negative number. 
+
+Let's guess $x=6:~f(6)=6-5=1.$ A positive number.
+
+The answer must be between them. Let's try $x=6+12: f(72)<0$
+
+So it must be between 72 and 6...etc.
+
+This is called **bisection method.**
+
+- Numerical solutions are extremely abundant. 
+- The main reason is that sometimes we either don't have an analytical approach (try to solve $x^6-4x^5+\sin(x)-e^x+7-1^x=0)$ or that the analytical solution is too slow and instead of computing for 15 hours and getting an exact solution, we rather compute for 15 seconds and get a good approximation.
+
+
+# NOTE
+
+- Numerical methods use exact algorithms to present numerical solutions to mathematical problems.
+
+- Analytic methods use exact theorems to present formulas that can be used to present numerical solutions to mathematical problems with or without the use of numerical methods.
+
+- Analytical method gives exact solutions, more time consuming and sometimes impossible. 
+
+- Whereas numerical methods give approximate solution with allowable tolerance, less time and possible for most cases
+
+**Analytical Method**
+
+- When a problem is solved by means of analytical method its solution may be exact.
+- it doesn't follow any algorithm to solve a problem
+- This method provides exact solution to a problem
+- These problems are easy to solve and can be solved with pen and paper
+
+**Numerical Method**
+
+- When a problem is solved by mean of numerical method its solution may give an approximate number to a solution
+- It is the subject concerned with the construction, analysis and use of algorithms to solve a problem
+- It provides estimates that are very close to exact solution
+- It can't be solved with pen and paper but can be solved via computer tools like R, Python, FORTRAN or C++
+
+# Bisection Method
+
+- The bisection method is the easiest to numerically implement and almost always works. 
+- The main **disadvantage** is that **convergence is slow**. 
+
+- If the bisection method results in a computer program that runs too slow, then other faster methods may be chosen; otherwise it is a good choice of method.
+
+We want to construct a sequence $x^{(0)},~x^{(1)},~x^{(2)}, \ldots$ that converges to the root $x = r$ that solves $f(x) = 0.$ 
+
+- We choose $x^{(0)}$ and $x^{(1)}$ such that $x^{(0)} < r < x^{(1)}.$ 
+- We say that $x^{(0)}$ and $x^{(1)}$ bracket the root. 
+- With $f(r) = 0,$ we want $f(x^{(0)})$ and $f(x^{(1)})$ to be of opposite sign, so that 
+$$f(x^{(0)})\times f(x^{(1)}) < 0.$$ 
+
+# Bisection Method-Cont.
+
+We then assign $x^{(2)}$ to be the midpoint of $x^{(0)}$ and $x^{(1)},$
+that is 
+$$x^{(2)} = \frac {x^{(0)} + x^{(1)}}{2},$$ 
+or
+$$x^{(2)} = x^{(0)} +\frac {x^{(1)} - x^{(0)}}{2}.$$
+The sign of $f(x^{(2)})$ can then be determined. 
+
+The value of $x^{(3)}$ is then chosen as either the midpoint of $x^{(0)}$ and $x^{(2)}$ or as the midpoint of $x^{(2)}$ and $x^{(1)},$ depending on whether
+$x^{(0)}$ and $x^{(2)}$ bracket the root, or $x^{(2)}$ and $x^{(1)}$ bracket the root. 
+
+The root, therefore, stays bracketed at all times. The algorithm proceeds in this fashion and is typically stopped when the increment to the left side of the bracket (above, given by $$\frac {x^{(1)} -x^{(0)}}{2}$$ is smaller than some required precision.
+
+$$x^{(n+1)} = x^{(n-1)} +\frac {x^{(n)} - x^{(n-1)}}{2}.$$
+
+# EXAMPLE-Bisection method
+
+Suppose that we wish to implement the bisection method to maxima of the function
+$$y=f(x)=\frac {\ln x}{1 + x}.$$
+The plot of the function suggests that the maxima is potentially between $3$ and $4.$ See the following:
+```{r}
+curve(log(x)/(1+x), from=1, to=5, , xlab="x", ylab="y")
+```
+
+# Example-Cont.
+
+Turning points for this curve will satisfy $f^\prime(x)=0.$ That is,
+$$\frac {dy}{dx}=f^\prime(x)=\frac {1+\frac {1}{x}-\ln x}{(1 + x)^2}=0.$$
+A plot of this first derivatives is:
+```{r}
+curve((1+(1/x)-log(x))/(1+x)^2, from=1, to=5, , xlab="x", ylab="y")
+```
+
+# Example-R code
+
+To find maxima of the equation $f(x)=\frac {\ln x}{1 + x}$ is thus equivalent to finding the root of $f^\prime(x)=\frac {1+\frac {1}{x}-\ln x}{(1 + x)^2}.$ A plot the function $f^\prime(x)$ has helped identify the bounds wherein the solution lies.
+
+In this code **a** is the initial left endpoint, **b** is the initial right endpoint, **x** is the initial value, **itr** provides the number of iterations to run, **g** is the objective function, and **g.prime** is first derivative of objective function.
+
+```{r}
+## INITIAL VALUES
+a = 1
+b = 5
+x = a+(b-a)/2
+itr = 40
+
+## FUNCTIONS
+f = function(x){log(x)/(1+x)}
+f.prime = function(x){(1+(1/x)-log(x))/((1+x)^2)}
+
+## MAIN
+for (i in 1:itr){
+    if (f.prime(a)*f.prime(x) < 0) {b = x}
+    else {a = x}
+    x = a+(b-a)/2
+}
+```
+# The Output
+```{r}
+x		# FINAL ESTIMATE
+f(x)		# OBJECTIVE FUNCTION AT ESTIMATE
+f.prime(x) 	# GRADIENT AT ESTIMATE
+```
+
+
+# Newton’s Method
+
+- This is a faster method, but requires analytical computation of the derivative of $f(x).$ 
+- Also, the method **may not always converge** to the desired root.
+- We can derive Newton’s Method graphically, or by a Taylor series. 
+- We again want to construct a sequence $x^{(0)}, x^{(1)}, x^{(2)},\ldots$ that converges to the root $x = r.$ 
+- Consider the $x^{(n+1)}$ member of this sequence, and Taylor series expand $f(x^{(n+1)})$ about the point $x^{(n)}.$ We have
+$$f(x^{(n+1)}) = f(x^{(n)}) + (x^{(n+1)} - x^{(n)})f^\prime (x^{(n)}) +\ldots$$
+To determine $x^{(n+1)},$ we drop the higher-order terms in the Taylor series, and assume $f(x^{(n+1)}) = 0.$ That is,
+$$f(x^{(n+1)}) \approx f(x^{(n)}) + (x^{(n+1)} - x^{(n)})f^\prime (x^{(n)})\Rightarrow 0 \approx  f(x^{(n)})+(x^{(n+1)} - x^{(n)})f^\prime (x^{(n)})$$
+
+Solving for $x^{(n+1)},$ we have
+$$x^{(n+1)} = x^{(n)} -\frac {f(x^{(n)})}{f^\prime (x^{(n)})}.$$
+Starting Newton’s Method requires a guess for $x^{(0)},$ hopefully close to the root $x = r.$
+
+# EXAMPLE-NEWTON'S METHOD
+
+We continue with the previous example where we seek the maxima for the function $y=f(x)=\frac {\ln x}{1 + x},$ which is equivalent to seeking the root of it's first derivative
+$$g(x)=f^\prime(x)=\frac {1+\frac {1}{x}-\ln x}{(1 + x)^2}=0.$$
+To solve $g(x)=0$ using Newton's method requires the we find $g^\prime(x)$ so that our iterative formula is:
+$$x^{(n+1)} = x^{(n)} -\frac {g(x^{(n)})}{g^\prime (x^{(n)})}.$$
+Now
+$$g^\prime(x)=\frac {\frac {-1}{x^2+x^3}-2(1+\frac {1}{x})-\ln x}{(1+x)^3}$$
+
+# The R-code
+
+In the code **x** is the initial value, **itr** is the number of iterations to run, **g** is the objective function, **g.prime** is the first derivative of objective function, and **g.2prime** is second derivative of objective function.
+
+```{r}
+## INITIAL VALUES
+x = 3
+itr = 40
+
+## FUNCTIONS
+f = function(x){log(x)/(1+x)}
+f.prime = function(x){(1+(1/x)-log(x))/((1+x)^2)}
+f.2prime = function(x){(-1/((x^2)+(x^3)))-2*(1+(1/x)-log(x))/((1+x)^3)}
+
+## MAIN
+for(i in 1:itr){x = x - f.prime(x)/f.2prime(x)}
+```
+
+
+# OUTPUT
+```{r}
+x		# FINAL ESTIMATE
+f(x)		# OBJECTIVE FUNCTION AT ESTIMATE
+f.prime(x)	# GRADIENT AT ESTIMATE
+```
+
+
+# Secant Method
+
+- The Secant Method is second best to Newton’s Method, and is used when a faster convergence than Bisection is desired, but it is too difficult or impossible to take an analytical derivative of the function $f(x)$. 
+
+We write in place of $f^\prime (x^{(n)}),$
+$$f^\prime (x^{(n)})\approx \frac {f(x^{(n)}) - f(x^{(n-1)})}{x^{(n)} - x^{(n-1)}}$$
+so that our iterative formula becomes
+
+\begin {align}x^{(n+1)} &= x^{(n)} -\frac {f(x^{(n)})}{f^\prime (x^{(n)})},\\&= x^{(n)} -\left[\frac {x^{(n)} - x^{(n-1)}}{f(x^{(n)}) - f(x^{(n-1)})}\right]f(x^{(n)}).
+\end {align}
+
+$$\boxed {x^{(n+1)} = x^{(n)} -\left[\frac {x^{(n)} - x^{(n-1)}}{f(x^{(n)}) - f(x^{(n-1)})}\right]f(x^{(n)})}.$$
+
+Starting the Secant Method requires a guess for both $x^{(0)}$ and $x^{(1)}.$
+
+
+
+# Estimate $\sqrt 2= 1.41421356$ using Newton’s Method
+
+The $\sqrt 2$ is the zero of the function 
+$$f(x) = x^2 - 2.$$
+To implement Newton’s Method, we use $f^\prime (x) = 2x.$ Therefore, Newton’s Method is the iteration
+$$x^{(n+1)} = x^{(n)} -\frac {[{x^{(n)}}]^2 - 2}{2x^{(n)}}.$$
+
+We take as our initial guess $x^{(0)} = 1.$ Then
+\begin {align}
+x^{(1)} &= x^{(0)} -\frac {\left[{x^{(0)}}\right]^2 - 2}{2x^{(0)}}=1 -\frac {-1}{2}=\frac {3}{2}= 1.5,\\
+x^{(2)} &= x^{(1)} -\frac {\left[{x^{(1)}}\right]^2 - 2}{2x^{(1)}}=\frac {3}{2}-\frac {\frac {9}{4} - 2}{3}=\frac {17}{12} = 1.416667,\\
+x_3 &= x^{(2)} -\frac {\left[{x^{(2)}}\right]^2 - 2}{2x^{(2)}}=1.41426.\\
+\end {align}
+
+# Order of convergence
+
+Let $r$ be the root and $x^{(n)}$ be the $n-$th approximation to the root. 
+
+Define the error as
+$$\varepsilon^{(n)} = r - x^{(n)}.$$
+If for large $n$ we have the approximate relationship
+$$|\varepsilon^{(n+1)}| = k|\varepsilon^{(n)}|^p,$$
+with $k$ a positive constant, then we say the root-finding numerical method is of order $p.$ Larger values of $p$ correspond to faster convergence to the root. The order of convergence of bisection is one: the error is reduced by approximately a factor of 2 with each iteration so that
+$$|\varepsilon^{(n+1)}| =\frac {1}{2}|\varepsilon^{(n)}|.$$
+We now find the order of convergence for Newton’s Method and for the Secant Method.
+
+# Newton’s Method
+We start with Newton’s Method
+$$x^{(n+1)} = x^{(n)} -\frac {f(x^{(n)})}{f^\prime (x^{(n)})}.$$
+Subtracting both sides from $r,$ we have
+$$r-x^{(n+1)} = r-x^{(n)} +\frac {f(x^{(n)})}{f^\prime (x^{(n)})},$$
+or
+$$\varepsilon^{(n+1)} = \varepsilon^{(n)} +\frac {f(x^{(n)})}{f^\prime (x^{(n)})},$$
+We use Taylor series to expand the functions $f(x^{(n)})$ and $f^\prime (x^{(n)})$ about the root r, using $f(r) = 0.$ We have
+\begin {align}
+f(x^{(n)})&=f(r)+(x^{(n)}-r)f^\prime (r)+\frac {(x^{(n)}-r)^2}{2!}f^{\prime\prime} (r)+\ldots\\
+&=0-\varepsilon^{(n)}f^\prime (r)+\frac {[\varepsilon^{(n)}]^2}{2!}f^{\prime\prime} (r)+\ldots+
+f^\prime (x^{(n)})\\
+&=f^\prime(r)+(x^{(n)}-r)f^{\prime\prime} (r)+\frac {(x^{(n)}-r)^2}{2!}f^{\prime\prime\prime} (r)+\ldots\\
+&=f^\prime(r)+\varepsilon^{(n)}f^{\prime\prime} (r)+\frac {[\varepsilon^{(n)}]^2}{2!}f^{\prime\prime\prime} (r)+\ldots\\
+\end {align}
+To make further progress, we will make use of the following standard Taylor series:
+$$\frac {1}{1 - \theta}= 1 + \theta + \theta^2 +\ldots,$$
+which converges for $|\theta| < 1.$
+\begin {align}
+\varepsilon^{(n+1)}&=\varepsilon^{(n)} +\frac {f(x^{(n)})}{f^\prime (x^{(n)})},\\
+&=\varepsilon^{(n)} +\frac {-\varepsilon^{(n)}f^\prime (r)+\frac {[\varepsilon^{(n)}]^2}{2!}f^{\prime\prime} (r)+\ldots}{f^\prime(r)+\varepsilon^{(n)}f^{\prime\prime} (r)+\frac {[\varepsilon^{(n)}]^2}{2!}f^{\prime\prime\prime} (r)+\ldots},\\
+&=\varepsilon^{(n)} +\frac {-\varepsilon^{(n)}+\frac {[\varepsilon^{(n)}]^2}{2!}\frac {f^{\prime\prime} (r)}{f^\prime (r)}+\ldots}{1+\varepsilon^{(n)}\frac {f^{\prime\prime} (r)}{f^\prime (r)}+\frac {[\varepsilon^{(n)}]^2}{2!}\frac {f^{\prime\prime\prime} (r)}{f^\prime (r)}+\ldots},\\
+&=\varepsilon^{(n)} +\left[-\varepsilon^{(n)}+\frac {[\varepsilon^{(n)}]^2}{2!}\frac {f^{\prime\prime} (r)}{f^\prime (r)}+\ldots\right]\left[1+\varepsilon^{(n)}\frac {f^{\prime\prime} (r)}{f^\prime (r)}+\ldots\right],\\
+&=\varepsilon^{(n)} +\left[-\varepsilon^{(n)}-[\varepsilon^{(n)}]^2\frac {f^{\prime\prime} (r)}{f^\prime (r)}+\frac {[\varepsilon^{(n)}]^2}{2!}\frac {f^{\prime\prime} (r)}{f^\prime (r)}+\ldots\right],\\
+&=-\frac {[\varepsilon^{(n)}]^2}{2}\frac {f^{\prime\prime} (r)}{f^\prime (r)}+\ldots
+\end {align}
+Therefore, we have shown that
+$$|\varepsilon^{(n+1)}| = k|\varepsilon^{(n)}|^2$$
+as $n\rightarrow \infty,$ with
+$$k=\frac {1}{2}\left|\frac {f^{\prime\prime} (r)}{f^\prime (r)}\right|$$
+provided $|f^\prime (r)|= 0.$ Newton’s method is thus of order $2$ at simple roots.
+
+# Secant Method 
+
+Determining the order of the Secant Method proceeds in a similar fashion. We start with
+$$x^{(n+1)} = x^{(n)} -\left[\frac {x^{(n)} - x^{(n-1)}}{f(x^{(n)}) - f(x^{(n-1)})}\right]f(x^{(n)})$$
+
+We subtract both sides from r and make use of
+\begin {align}x^{(n)} - x_{n-1}&= (r - x_{n-1}) - (r - x^{(n)}),\\
+&= \varepsilon_{n-1} - \varepsilon^{(n)},\end {align}
+and the Taylor series
+\begin {align}
+f(x^{(n)})&= -\varepsilon^{(n)} f^\prime(r) + \frac {1}{2}\varepsilon^2_nf^{\prime\prime}(r) + \ldots,\\
+f(x^{(n-1)})&= -\varepsilon^{(n-1)} f^\prime(r) + \frac {1}{2}\varepsilon^2_{n-1}f^{\prime\prime}(r) + \ldots.
+\end {align}
+so that
+\begin {align}f(x^{(n)})-f(x^{(n-1)})&= (\varepsilon^{(n-1)}-\varepsilon^{(n)}) f^\prime(r) + \frac {1}{2}(\varepsilon^2_{n}-\varepsilon^2_{n-1})f^{\prime\prime}(r) + \ldots\\
+&=(\varepsilon^{(n-1)}-\varepsilon^{(n)}) \left[f^\prime(r) - \frac {1}{2}(\varepsilon^{(n-1)}+\varepsilon_{n})f^{\prime\prime}(r) + \ldots\right]\\
+\end {align}
+
+Since 
+
+$$x^{(n+1)} = x^{(n)} -\left[\frac {x^{(n)} - x_{n-1}}{f(x^{(n)}) - f(x_{n-1})}\right]f(x^{(n)})\Rightarrow \varepsilon^{(n)}- \varepsilon^{(n+1)}=-\left[\frac {\varepsilon^{(n-1)}- \varepsilon^{(n)}}{f(x^{(n)}) - f(x_{n-1})}\right]f(x^{(n)})$$
+we have
+\begin {align}
+\varepsilon^{(n+1)}&=\varepsilon^{(n)}+\left[\frac {\varepsilon^{(n-1)}- \varepsilon^{(n)}}{f(x^{(n)}) - f(x_{n-1})}\right]f(x^{(n)})\\
+&=\varepsilon^{(n)}+\left[\frac {\varepsilon^{(n-1)}- \varepsilon^{(n)}}{(\varepsilon^{(n-1)}-\varepsilon^{(n)}) \left[f^\prime(r) - \frac {1}{2}(\varepsilon^{(n-1)}+\varepsilon_{n})f^{\prime\prime}(r) + \ldots\right]}\right]\left[-\varepsilon^{(n)} f^\prime(r) + \frac {1}{2}\varepsilon^2_nf^{\prime\prime}(r) + \ldots\right]\\
+&=\varepsilon^{(n)}+\left[\frac {-\varepsilon^{(n)} f^\prime(r) + \frac {1}{2}\varepsilon^2_nf^{\prime\prime}(r) + \ldots}{\left[f^\prime(r) - \frac {1}{2}(\varepsilon^{(n-1)}+\varepsilon_{n})f^{\prime\prime}(r) + \ldots\right]}\right]\\
+&=\varepsilon^{(n)}-\varepsilon^{(n)}\left[\frac {1 -\frac {1}{2}\varepsilon^{(n)} \frac {f^{\prime\prime}(r)}{f^\prime(r)} + \ldots}{1 + \frac {1}{2}(\varepsilon^{(n-1)}+\varepsilon_{n})\frac {f^{\prime\prime}(r)}{f^\prime(r)} + \ldots}\right]\\
+&=\varepsilon^{(n)}-\varepsilon^{(n)}\left[1 -\frac {1}{2}\varepsilon^{(n)} \frac {f^{\prime\prime}(r)}{f^\prime(r)} + \ldots\right]\left[1 + \frac {1}{2}(\varepsilon^{(n-1)}+\varepsilon_{n})\frac {f^{\prime\prime}(r)}{f^\prime(r)} + \ldots\right]\\
+&=-\frac {1}{2}\frac {f^{\prime\prime}(r)}{f^\prime(r)}\varepsilon^{(n-1)} \varepsilon^{(n)}
+\end {align}
+
+or to leading order
+$$\varepsilon^{(n+1)}=\frac {1}{2}\left|\frac {f^{\prime\prime}(r)}{f^\prime(r)}\right|\left|\varepsilon^{(n-1)}\right| \left|\varepsilon^{(n)}\right|.$$
+The order of convergence is not yet obvious from this equation, and to determine
+the scaling law we look for a solution of the form
+$$|\varepsilon^{(n+1)}| = k|\varepsilon^{(n)}|^p.$$
+From this ansatz, we also have
+$$|\varepsilon^{(n)}| = k|\varepsilon^{(n-1)}|^p,$$
+and therefore
+$$|\varepsilon^{(n+1)}| = k^{p+1}|\varepsilon^{(n-1)}|^{p^2},$$
+This leads to
+$$k^{p+1}|\varepsilon^{(n-1)}|^{p^2}=\frac {k}{2}\left|\frac {f^{\prime\prime}(r)}{f^\prime(r)}\right|\left|\varepsilon^{(n-1)}\right|^{p+1}.$$
+
+Equating the coefficient and the power of en-1 results in
+$$k^p=\frac {1}{2}\left|\frac {f^{\prime\prime}(r)}{f^\prime(r)}\right|,$$
+and $p^2 = p + 1.$
+
+The order of convergence of the Secant Method, given by p, therefore is determined to be the positive root of the quadratic equation 
+$$p^2 - p - 1 = 0,$$ 
+or
+$$p =\frac {1 +\sqrt 5}{2}\approx 1.618,$$
+which coincidentally is a famous irrational number that is called The Golden Ratio, and goes by the symbol $\phi.$ We see that the Secant Method has an order of convergence lying between the Bisection Method and Newton’s Method.
+
